@@ -33,11 +33,17 @@ class TripResponseSerializer(serializers.ModelSerializer):
             "dropoff_location",
             "current_cycle_used_hrs",
             "status",
+            "route_data",
+            "total_distance_miles",
+            "total_duration_hrs",
+            "error_message",
             "message",
             "created_at",
         ]
 
     def get_message(self, obj):
-        if obj.status == Trip.STATUS_PENDING:
-            return "Route calculation not yet implemented"
-        return "Trip processed"
+        if obj.status == Trip.STATUS_FAILED:
+            return obj.error_message or "Trip planning failed."
+        if obj.status == Trip.STATUS_COMPLETED:
+            return f"Route planned — {obj.total_distance_miles} mi, {obj.total_duration_hrs} hrs total."
+        return "Route calculation in progress."
