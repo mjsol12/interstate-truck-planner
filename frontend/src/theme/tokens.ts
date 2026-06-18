@@ -14,6 +14,7 @@ export const tokens = {
     headerHeight: 72,
   },
   radius: {
+    xs: 6,
     sm: 8,
     md: 12,
     lg: 16,

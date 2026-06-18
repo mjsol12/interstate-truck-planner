@@ -27,7 +27,7 @@ export function TableSurface({
   const frameSx: SxProps<Theme> = plain
     ? { bgcolor: "transparent", border: "none", borderRadius: 0 }
     : {
-        borderRadius: 1,
+        borderRadius: "6px",
         border: 1,
         borderColor: "divider",
         bgcolor: "background.paper",
@@ -125,7 +125,7 @@ export function SplitScrollTable({
           minHeight: bodyMinHeight,
           border: 1,
           borderColor: "divider",
-          borderRadius: 1,
+          borderRadius: "6px",
           overflow: "hidden",
         }}
       >
@@ -147,6 +147,8 @@ export function SplitScrollTable({
               minWidth,
               width: columns?.length ? minWidth : "100%",
               tableLayout: "fixed",
+              borderCollapse: "separate",
+              borderSpacing: 0,
             }}
             aria-label={ariaLabel}
           >
@@ -175,9 +177,12 @@ const headCellSx: SxProps<Theme> = {
   boxSizing: "border-box",
 };
 
+/** Solid hover fill — avoids see-through sticky columns over scrolled cells. */
+const bodyRowHoverBg = "background.default";
+
 const bodyCellSx: SxProps<Theme> = {
   px: 1.5,
-  py: 1.25,
+  py: 0.75,
   fontSize: "0.8125rem",
   borderBottom: 1,
   borderColor: "divider",
@@ -186,7 +191,37 @@ const bodyCellSx: SxProps<Theme> = {
   whiteSpace: "nowrap",
   boxSizing: "border-box",
   maxWidth: 0,
+  bgcolor: "background.paper",
+  ".MuiTableRow-root:hover &": { bgcolor: bodyRowHoverBg },
+  ".MuiTableRow-root.Mui-selected &": { bgcolor: "primary.light" },
+  ".MuiTableRow-root.Mui-selected:hover &": { bgcolor: "primary.light" },
 };
+
+const stickyBodyCellStateSx: SxProps<Theme> = {
+  bgcolor: "background.paper",
+  backgroundClip: "padding-box",
+  ".MuiTableRow-root:hover &": { bgcolor: bodyRowHoverBg },
+  ".MuiTableRow-root.Mui-selected &": { bgcolor: "primary.light" },
+  ".MuiTableRow-root.Mui-selected:hover &": { bgcolor: "primary.light" },
+};
+
+function stickyLeftCellSx(isHead: boolean, left: number): SxProps<Theme> {
+  const zIndex = isHead ? (left === 0 ? 12 : 11) : left === 0 ? 3 : 2;
+
+  return {
+    position: "sticky",
+    left,
+    ...(isHead && { top: 0 }),
+    zIndex,
+    ...(isHead
+      ? { bgcolor: "background.default", backgroundClip: "padding-box" }
+      : stickyBodyCellStateSx),
+    boxShadow: (theme) => {
+      const edge = `1px 0 0 0 ${theme.palette.divider}`;
+      return isHead ? `${edge}, 0 1px 0 0 ${theme.palette.divider}` : edge;
+    },
+  };
+}
 
 export function AppTable({
   children,
@@ -220,7 +255,14 @@ export function AppTableHead({
                 position: "sticky",
                 top: 0,
                 zIndex: 10,
+                bgcolor: "background.default",
                 boxShadow: (theme) => `0 1px 0 0 ${theme.palette.divider}`,
+              },
+              "& .MuiTableCell-head[data-sticky-left]": {
+                zIndex: 11,
+              },
+              "& .MuiTableCell-head[data-sticky-left='0']": {
+                zIndex: 12,
               },
             }
           : undefined
@@ -235,6 +277,7 @@ export function AppTableHeadCell({
   children,
   align = "left",
   minWidth,
+  stickyLeftOffset,
   sx,
 }: {
   children: ReactNode;
@@ -242,14 +285,21 @@ export function AppTableHeadCell({
   /** @deprecated Use SplitScrollTable `columns` / colgroup for width control. */
   width?: number | string;
   minWidth?: number;
+  /** Pin column while scrolling horizontally — value is the `left` offset in px. */
+  stickyLeftOffset?: number;
   sx?: SxProps<Theme>;
 }) {
   return (
     <TableCell
       align={align}
+      {...(stickyLeftOffset !== undefined
+        ? { "data-sticky-left": String(stickyLeftOffset) }
+        : {})}
       sx={[
         headCellSx,
         minWidth !== undefined && { minWidth },
+        stickyLeftOffset !== undefined &&
+          stickyLeftCellSx(true, stickyLeftOffset),
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}
     >
@@ -273,15 +323,11 @@ export function AppTableRow({
 }) {
   return (
     <TableRow
-      hover
       selected={selected}
       onClick={onClick}
       sx={{
         cursor: onClick ? "pointer" : "default",
         "&:last-child td": { borderBottom: 0 },
-        "&:hover": { bgcolor: "action.hover" },
-        "&.Mui-selected": { bgcolor: "primary.light" },
-        "&.Mui-selected:hover": { bgcolor: "primary.light" },
       }}
     >
       {children}
@@ -297,6 +343,7 @@ export function AppTableCell({
   nowrap = true,
   title,
   minWidth,
+  stickyLeftOffset,
   sx,
 }: {
   children: ReactNode;
@@ -307,6 +354,8 @@ export function AppTableCell({
   nowrap?: boolean;
   title?: string;
   minWidth?: number;
+  /** Pin column while scrolling horizontally — value is the `left` offset in px. */
+  stickyLeftOffset?: number;
   sx?: SxProps<Theme>;
 }) {
   return (
@@ -319,6 +368,8 @@ export function AppTableCell({
         muted && { color: "text.secondary" },
         !nowrap && { whiteSpace: "normal", maxWidth: "none" },
         minWidth !== undefined && { minWidth },
+        stickyLeftOffset !== undefined &&
+          stickyLeftCellSx(false, stickyLeftOffset),
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}
     >
@@ -360,7 +411,7 @@ export function AppTableLoadingRows({
     <>
       {Array.from({ length: rows }, (_, index) => (
         <TableRow key={`loading-${index}`} aria-hidden="true">
-          <AppTableCell colSpan={colSpan} sx={{ py: 1.25, maxWidth: "none" }}>
+          <AppTableCell colSpan={colSpan} sx={{ py: 0.75, maxWidth: "none" }}>
             <Box
               sx={{
                 height: 16,
