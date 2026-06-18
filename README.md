@@ -113,8 +113,34 @@ Build an app that takes trip details and outputs:
 - [x] Plan fuel stops every 1,000 miles
 - [x] Render route polyline and stop markers on map
 - [x] Draw filled ELD daily log sheets (multi-day trips)
-- [ ] Deploy frontend (Vercel) and backend (Render/Railway/etc.)
+- [x] Deploy config (`frontend/vercel.json`, `render.yaml`)
+- [ ] Deploy frontend (Vercel) and backend (Render) — see below
 - [ ] Record 3–5 minute Loom walkthrough
+
+## Deploy (free tier)
+
+### 1. Backend — Render
+
+1. Push the repo to GitHub.
+2. In [Render](https://dashboard.render.com/), **New → Blueprint** and connect the repo (uses `render.yaml`).
+3. After the first deploy, open the web service **Environment** and set:
+   - `CORS_ALLOWED_ORIGINS` = your Vercel URL (e.g. `https://your-app.vercel.app`)
+4. Note the service URL, e.g. `https://eld-trip-planner-api.onrender.com`.
+5. Verify: `GET https://<your-service>.onrender.com/api/health/` → `{"status":"ok"}`.
+
+Free tier sleeps after ~15 minutes idle; first request may take 30–60s to wake.
+
+### 2. Frontend — Vercel
+
+1. In [Vercel](https://vercel.com/), **Add New Project** → import the GitHub repo.
+2. Set **Root Directory** to `frontend`.
+3. Add environment variable:
+   - `VITE_API_BASE_URL` = `https://<your-render-service>.onrender.com/api`
+4. Deploy. `frontend/vercel.json` handles SPA routing.
+
+### 3. Optional: Postgres on Render
+
+Add a Render Postgres instance and set `DATABASE_URL` on the web service. Without it, SQLite is used (fine for demos; data may not persist across redeploys on free tier).
 
 ## Deliverables
 
