@@ -38,7 +38,7 @@ export default function RouteSummary({ routeData }: RouteSummaryProps) {
           display: 'grid',
           gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(3, 1fr)' },
           gap: 1.5,
-          mb: 2,
+          mb: summary.warnings.length > 0 ? 0 : 2,
           m: 0,
         }}
       >
@@ -50,11 +50,23 @@ export default function RouteSummary({ routeData }: RouteSummaryProps) {
         <StatCard label="Remaining" value={String(summary.remaining_cycle_hrs)} unit="hrs" />
       </Box>
 
-      {summary.warnings.map((warning) => (
-        <Alert key={warning} severity="warning" sx={{ mb: 2 }} role="alert">
-          {warning}
-        </Alert>
-      ))}
+      {summary.warnings.length > 0 && (
+        <Box
+          sx={{
+            mt: 2.5,
+            mb: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+          }}
+        >
+          {summary.warnings.map((warning) => (
+            <Alert key={warning} severity="warning" role="alert">
+              {warning}
+            </Alert>
+          ))}
+        </Box>
+      )}
 
       <Typography variant="overline" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
         Route legs

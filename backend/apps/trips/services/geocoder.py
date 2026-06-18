@@ -17,6 +17,13 @@ class GeocodedLocation:
     lng: float
 
 
+@dataclass
+class LocationSuggestion:
+    label: str
+    lat: float
+    lng: float
+
+
 class GeocodingError(Exception):
     pass
 
@@ -27,6 +34,36 @@ def _rate_limit():
     if elapsed < 1.0:
         time.sleep(1.0 - elapsed)
     _last_request_at = time.time()
+
+
+def search_locations(query: str, limit: int = 5) -> list[LocationSuggestion]:
+    query = query.strip()
+    if len(query) < 2:
+        return []
+
+    _rate_limit()
+    response = requests.get(
+        NOMINATIM_URL,
+        params={
+            "q": query,
+            "format": "json",
+            "limit": limit,
+            "countrycodes": "us",
+            "addressdetails": 0,
+        },
+        headers={"User-Agent": USER_AGENT},
+        timeout=15,
+    )
+    response.raise_for_status()
+    results = response.json()
+    return [
+        LocationSuggestion(
+            label=result.get("display_name", query),
+            lat=float(result["lat"]),
+            lng=float(result["lon"]),
+        )
+        for result in results
+    ]
 
 
 def geocode_address(address: str) -> GeocodedLocation:

@@ -14,6 +14,7 @@ import { Link as RouterLink } from "react-router-dom";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import LocalGasStationOutlinedIcon from "@mui/icons-material/LocalGasStationOutlined";
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
+import LocationAutocomplete from "../components/LocationAutocomplete";
 import MapView from "../components/MapView";
 import RouteSummary from "../components/RouteSummary";
 import PageHeader from "../components/ui/PageHeader";
@@ -36,21 +37,31 @@ const complianceRules = [
   { label: "1 hr pickup & dropoff", icon: ScheduleOutlinedIcon },
 ];
 
+function parseCycleHours(value: string): number {
+  const parsed = parseFloat(value);
+  if (Number.isNaN(parsed)) return 0;
+  return Math.min(70, Math.max(0, parsed));
+}
+
 export default function Planner() {
   const [form, setForm] = useState<TripRequest>(initialForm);
+  const [cycleInput, setCycleInput] = useState("0");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TripResponse | null>(null);
 
-  const handleChange =
-    (field: keyof TripRequest) =>
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value =
-        field === "current_cycle_used_hrs"
-          ? parseFloat(event.target.value) || 0
-          : event.target.value;
-      setForm((prev) => ({ ...prev, [field]: value }));
-    };
+  const handleCycleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      setCycleInput(value);
+    }
+  };
+
+  const handleCycleBlur = () => {
+    const normalized = parseCycleHours(cycleInput);
+    setCycleInput(String(normalized));
+    setForm((prev) => ({ ...prev, current_cycle_used_hrs: normalized }));
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -58,8 +69,12 @@ export default function Planner() {
     setError(null);
     setResult(null);
 
+    const cycleHours = parseCycleHours(cycleInput);
+    setCycleInput(String(cycleHours));
+    const payload = { ...form, current_cycle_used_hrs: cycleHours };
+
     try {
-      const trip = await createTrip(form);
+      const trip = await createTrip(payload);
       setResult(trip);
       if (trip.id) saveLastTripId(trip.id);
     } catch (err) {
@@ -126,39 +141,36 @@ export default function Planner() {
               noValidate
             >
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <TextField
+                <LocationAutocomplete
                   label="Current location"
                   name="current_location"
                   value={form.current_location}
-                  onChange={handleChange("current_location")}
+                  onChange={(value) =>
+                    setForm((prev) => ({ ...prev, current_location: value }))
+                  }
                   required
-                  fullWidth
-                  size="small"
-                  autoComplete="address-level2"
                   placeholder="e.g. Chicago, IL"
                   disabled={loading}
                 />
-                <TextField
+                <LocationAutocomplete
                   label="Pickup location"
                   name="pickup_location"
                   value={form.pickup_location}
-                  onChange={handleChange("pickup_location")}
+                  onChange={(value) =>
+                    setForm((prev) => ({ ...prev, pickup_location: value }))
+                  }
                   required
-                  fullWidth
-                  size="small"
-                  autoComplete="off"
                   placeholder="e.g. Dallas, TX"
                   disabled={loading}
                 />
-                <TextField
+                <LocationAutocomplete
                   label="Dropoff location"
                   name="dropoff_location"
                   value={form.dropoff_location}
-                  onChange={handleChange("dropoff_location")}
+                  onChange={(value) =>
+                    setForm((prev) => ({ ...prev, dropoff_location: value }))
+                  }
                   required
-                  fullWidth
-                  size="small"
-                  autoComplete="off"
                   placeholder="e.g. Los Angeles, CA"
                   disabled={loading}
                 />
@@ -166,8 +178,9 @@ export default function Planner() {
                   label="Current cycle used"
                   name="current_cycle_used_hrs"
                   type="number"
-                  value={form.current_cycle_used_hrs}
-                  onChange={handleChange("current_cycle_used_hrs")}
+                  value={cycleInput}
+                  onChange={handleCycleChange}
+                  onBlur={handleCycleBlur}
                   required
                   fullWidth
                   size="small"
