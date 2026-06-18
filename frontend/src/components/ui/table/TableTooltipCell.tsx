@@ -245,7 +245,7 @@ function TableTooltipCellContent({
 }
 
 export default memo(TableTooltipCellContent);
-export { TableTooltipCellContent };
+export { TableTooltipCellContent, MessageQuoteCard as LogQuoteCard };
 
 /** Column header label with quote icon — indicates hoverable quote preview. */
 export function QuoteColumnHeader({ label }: { label: string }) {
