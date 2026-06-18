@@ -1,0 +1,13 @@
+---
+description: Git commit conventions — no Cursor co-author attribution
+alwaysApply: true
+---
+
+# Git commits
+
+When creating git commits in this repository:
+
+- Never pass `--trailer "Co-authored-by: Cursor <cursoragent@cursor.com>"` or any Cursor co-author trailer.
+- Never add `Co-authored-by: Cursor` lines to commit messages.
+- Use `git commit-tree` (after `git add` + `git write-tree`) instead of `git commit` if the environment injects co-author trailers automatically.
+- Keep commit messages focused on the change; do not mention Cursor in messages.
