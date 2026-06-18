@@ -1,10 +1,10 @@
-import { createTheme, type Theme } from '@mui/material/styles'
-import { tokens, type ColorMode } from './tokens'
+import { createTheme, type Theme } from "@mui/material/styles";
+import { tokens, type ColorMode } from "./tokens";
 
 export function createAppTheme(mode: ColorMode): Theme {
-  const isDark = mode === 'dark'
-  const c = tokens.colors
-  const d = tokens.dark
+  const isDark = mode === "dark";
+  const c = tokens.colors;
+  const d = tokens.dark;
 
   return createTheme({
     palette: {
@@ -13,7 +13,7 @@ export function createAppTheme(mode: ColorMode): Theme {
         main: c.brand[500],
         dark: c.brand[600],
         light: c.primaryLight,
-        contrastText: '#ffffff',
+        contrastText: "#ffffff",
       },
       text: {
         primary: isDark ? d.text : c.text,
@@ -30,19 +30,29 @@ export function createAppTheme(mode: ColorMode): Theme {
     },
     typography: {
       fontFamily: tokens.typography.fontFamily,
-      h1: { fontSize: '2rem', fontWeight: 700, lineHeight: 1.25, letterSpacing: '-0.02em' },
-      h2: { fontSize: '1.5rem', fontWeight: 700, lineHeight: 1.3, letterSpacing: '-0.02em' },
-      h3: { fontSize: '1.25rem', fontWeight: 600, lineHeight: 1.4 },
-      h4: { fontSize: '1.125rem', fontWeight: 600, lineHeight: 1.4 },
-      h5: { fontSize: '1rem', fontWeight: 600, lineHeight: 1.5 },
-      h6: { fontSize: '0.875rem', fontWeight: 600, lineHeight: 1.5 },
-      body1: { fontSize: '0.9375rem', lineHeight: 1.6 },
-      body2: { fontSize: '0.8125rem', lineHeight: 1.6 },
+      h1: {
+        fontSize: "2rem",
+        fontWeight: 700,
+        lineHeight: 1.25,
+        letterSpacing: "-0.02em",
+      },
+      h2: {
+        fontSize: "1.5rem",
+        fontWeight: 700,
+        lineHeight: 1.3,
+        letterSpacing: "-0.02em",
+      },
+      h3: { fontSize: "1.25rem", fontWeight: 600, lineHeight: 1.4 },
+      h4: { fontSize: "1.125rem", fontWeight: 600, lineHeight: 1.4 },
+      h5: { fontSize: "1rem", fontWeight: 600, lineHeight: 1.5 },
+      h6: { fontSize: "0.875rem", fontWeight: 600, lineHeight: 1.5 },
+      body1: { fontSize: "0.9375rem", lineHeight: 1.6 },
+      body2: { fontSize: "0.8125rem", lineHeight: 1.6 },
       overline: {
-        fontSize: '0.6875rem',
+        fontSize: "0.6875rem",
         fontWeight: 600,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
         lineHeight: 1.5,
       },
     },
@@ -52,16 +62,18 @@ export function createAppTheme(mode: ColorMode): Theme {
       MuiCssBaseline: {
         styleOverrides: {
           body: {
-            scrollbarColor: isDark ? '#344054 transparent' : '#d0d5dd transparent',
+            scrollbarColor: isDark
+              ? "#344054 transparent"
+              : "#d0d5dd transparent",
           },
-          ':focus-visible': {
+          ":focus-visible": {
             outline: `2px solid ${c.focusRing}`,
             outlineOffset: 2,
           },
-          '@media (prefers-reduced-motion: reduce)': {
-            '*, *::before, *::after': {
-              animationDuration: '0.01ms !important',
-              transitionDuration: '0.01ms !important',
+          "@media (prefers-reduced-motion: reduce)": {
+            "*, *::before, *::after": {
+              animationDuration: "0.01ms !important",
+              transitionDuration: "0.01ms !important",
             },
           },
         },
@@ -70,7 +82,7 @@ export function createAppTheme(mode: ColorMode): Theme {
         defaultProps: { disableElevation: true },
         styleOverrides: {
           root: {
-            textTransform: 'none',
+            textTransform: "none",
             fontWeight: 600,
             borderRadius: tokens.radius.sm,
             minHeight: 40,
@@ -83,13 +95,13 @@ export function createAppTheme(mode: ColorMode): Theme {
             boxShadow: tokens.shadow.sm,
             border: `1px solid ${isDark ? d.border : c.border}`,
             borderRadius: tokens.radius.md,
-            backgroundImage: 'none',
+            backgroundImage: "none",
           },
         },
       },
       MuiPaper: {
         styleOverrides: {
-          root: { backgroundImage: 'none' },
+          root: { backgroundImage: "none" },
         },
       },
       MuiOutlinedInput: {
@@ -102,11 +114,11 @@ export function createAppTheme(mode: ColorMode): Theme {
       MuiTooltip: {
         styleOverrides: {
           tooltip: {
-            fontSize: '0.75rem',
+            fontSize: "0.75rem",
             borderRadius: tokens.radius.sm,
           },
         },
       },
     },
-  })
+  });
 }

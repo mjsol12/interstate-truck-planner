@@ -1,9 +1,9 @@
-import { Box, Typography } from '@mui/material'
+import { Box, Typography } from "@mui/material";
 
 interface StatCardProps {
-  label: string
-  value: string
-  unit?: string
+  label: string;
+  value: string;
+  unit?: string;
 }
 
 export default function StatCard({ label, value, unit }: StatCardProps) {
@@ -12,9 +12,9 @@ export default function StatCard({ label, value, unit }: StatCardProps) {
       sx={{
         p: 2,
         borderRadius: 1,
-        bgcolor: 'background.default',
+        bgcolor: "background.default",
         border: 1,
-        borderColor: 'divider',
+        borderColor: "divider",
       }}
     >
       <Typography variant="overline" color="text.secondary" component="dt">
@@ -23,11 +23,16 @@ export default function StatCard({ label, value, unit }: StatCardProps) {
       <Typography variant="h5" component="dd" sx={{ mt: 0.5, mb: 0 }}>
         {value}
         {unit && (
-          <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 0.5 }}>
+          <Typography
+            component="span"
+            variant="body2"
+            color="text.secondary"
+            sx={{ ml: 0.5 }}
+          >
             {unit}
           </Typography>
         )}
       </Typography>
     </Box>
-  )
+  );
 }

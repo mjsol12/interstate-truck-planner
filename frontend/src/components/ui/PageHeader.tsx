@@ -1,12 +1,16 @@
-import { Box, Typography } from '@mui/material'
+import { Box, Typography } from "@mui/material";
 
 interface PageHeaderProps {
-  title: string
-  description?: string
-  id?: string
+  title: string;
+  description?: string;
+  id?: string;
 }
 
-export default function PageHeader({ title, description, id }: PageHeaderProps) {
+export default function PageHeader({
+  title,
+  description,
+  id,
+}: PageHeaderProps) {
   return (
     <Box component="header" sx={{ mb: 0 }}>
       <Typography
@@ -15,7 +19,7 @@ export default function PageHeader({ title, description, id }: PageHeaderProps) 
         component="h1"
         sx={{
           fontWeight: 700,
-          letterSpacing: '-0.02em',
+          letterSpacing: "-0.02em",
           lineHeight: 1.25,
           mb: description ? 0.5 : 0,
         }}
@@ -32,5 +36,5 @@ export default function PageHeader({ title, description, id }: PageHeaderProps) 
         </Typography>
       )}
     </Box>
-  )
+  );
 }
