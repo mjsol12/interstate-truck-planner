@@ -1,14 +1,18 @@
 import { useEffect } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Polyline, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, CircleMarker, Polyline, Popup, Marker, useMap } from 'react-leaflet'
 import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet'
 import { Box, Chip, Skeleton, Stack, Typography } from '@mui/material'
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined'
 import type { RouteData, RouteStop } from '../types/trip'
+import type { MapCoordinates } from '../types/location'
+import { plannerPinIcons, type PlannerPinType } from './map/plannerPinIcon'
+import { PLANNER_STOP_LABELS } from '../constants/plannerStops'
 import { tokens } from '../theme/tokens'
 import 'leaflet/dist/leaflet.css'
 
 const US_CENTER: LatLngExpression = [39.8283, -98.5795]
 const DEFAULT_ZOOM = 4
+const PLANNER_PIN_ZOOM = 8
 
 const STOP_COLORS = tokens.map.stops as Record<RouteStop['type'], string>
 
@@ -21,11 +25,24 @@ const STOP_LABELS: Record<RouteStop['type'], string> = {
   break: 'Break',
 }
 
+interface PlannerPinProps {
+  id: PlannerPinType
+  label: string
+  position: MapCoordinates
+  draggable?: boolean
+  onMove?: (lat: number, lng: number) => void
+  recenter?: boolean
+  onRecenterComplete?: () => void
+}
+
 interface MapViewProps {
   routeData?: RouteData | null
   loading?: boolean
   /** Render inside a Panel — hides duplicate chrome/header. */
   embedded?: boolean
+  /** Show interactive map with draggable location pins before route exists. */
+  planningMode?: boolean
+  plannerPins?: PlannerPinProps[]
 }
 
 function FitBounds({ bounds }: { bounds: LatLngBoundsExpression }) {
@@ -34,6 +51,85 @@ function FitBounds({ bounds }: { bounds: LatLngBoundsExpression }) {
     map.fitBounds(bounds, { padding: [40, 40] })
   }, [map, bounds])
   return null
+}
+
+function FlyToPlannerPin({
+  position,
+  active,
+  onComplete,
+}: {
+  position: LatLngExpression
+  active: boolean
+  onComplete?: () => void
+}) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!active) return
+    map.flyTo(position, Math.max(map.getZoom(), PLANNER_PIN_ZOOM), { duration: 0.8 })
+    onComplete?.()
+  }, [active, map, onComplete, position])
+
+  return null
+}
+
+function DraggablePlannerPin({
+  id,
+  label,
+  position,
+  draggable = true,
+  onMove,
+}: PlannerPinProps) {
+  return (
+    <Marker
+      position={[position.lat, position.lng]}
+      icon={plannerPinIcons[id]}
+      draggable={draggable}
+      eventHandlers={{
+        dragend: (event) => {
+          const { lat, lng } = event.target.getLatLng()
+          onMove?.(lat, lng)
+        },
+      }}
+    >
+      <Popup>
+        <strong>{label}</strong>
+        <br />
+        Drag to adjust
+      </Popup>
+    </Marker>
+  )
+}
+
+function PlanningLegend() {
+  const types: PlannerPinType[] = ['current', 'pickup', 'dropoff']
+
+  return (
+    <Stack
+      direction="row"
+      role="list"
+      aria-label="Planning map legend"
+      sx={{ flexWrap: 'wrap', gap: 0.75 }}
+    >
+      {types.map((type) => (
+        <Chip
+          key={type}
+          role="listitem"
+          size="small"
+          label={PLANNER_STOP_LABELS[type]}
+          variant="outlined"
+          sx={{
+            borderColor: STOP_COLORS[type],
+            color: STOP_COLORS[type],
+            fontWeight: 600,
+            fontSize: '0.6875rem',
+            height: 22,
+            bgcolor: 'background.paper',
+          }}
+        />
+      ))}
+    </Stack>
+  )
 }
 
 function MapLegend() {
@@ -65,14 +161,30 @@ function MapLegend() {
   )
 }
 
-export default function MapView({ routeData, loading = false, embedded = false }: MapViewProps) {
+export default function MapView({
+  routeData,
+  loading = false,
+  embedded = false,
+  planningMode = false,
+  plannerPins = [],
+}: MapViewProps) {
   const geometry = routeData?.geometry ?? []
   const stops = routeData?.stops ?? []
   const hasRoute = geometry.length > 0
+  const showPlannerPins = planningMode && !hasRoute && plannerPins.length > 0
 
   const bounds: LatLngBoundsExpression | null = hasRoute
     ? (geometry as LatLngBoundsExpression)
     : null
+
+  const primaryPlannerPin = plannerPins[0]
+  const mapCenter: LatLngExpression = hasRoute
+    ? (geometry[Math.floor(geometry.length / 2)] as LatLngExpression)
+    : primaryPlannerPin
+      ? ([primaryPlannerPin.position.lat, primaryPlannerPin.position.lng] as LatLngExpression)
+      : US_CENTER
+
+  const mapZoom = hasRoute ? 6 : showPlannerPins ? DEFAULT_ZOOM : DEFAULT_ZOOM
 
   const mapHeight = embedded
     ? { xs: 360, sm: 420, md: 520 }
@@ -120,7 +232,7 @@ export default function MapView({ routeData, loading = false, embedded = false }
           />
         )}
 
-        {!loading && !hasRoute && (
+        {!loading && !hasRoute && !showPlannerPins && (
           <Box
             sx={{
               position: 'absolute',
@@ -135,6 +247,7 @@ export default function MapView({ routeData, loading = false, embedded = false }
               gap: 1,
               p: 3,
               textAlign: 'center',
+              pointerEvents: 'none',
             }}
           >
             <MapOutlinedIcon sx={{ fontSize: 48, opacity: 0.35 }} aria-hidden />
@@ -147,13 +260,33 @@ export default function MapView({ routeData, loading = false, embedded = false }
           </Box>
         )}
 
+        {showPlannerPins && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 12,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1000,
+              px: 1.5,
+              py: 0.75,
+              borderRadius: 1,
+              bgcolor: 'background.paper',
+              border: 1,
+              borderColor: 'divider',
+              boxShadow: 1,
+              pointerEvents: 'none',
+            }}
+          >
+            <Typography variant="caption" color="text.secondary">
+              Drag pins or enter locations in the form
+            </Typography>
+          </Box>
+        )}
+
         <MapContainer
-          center={
-            hasRoute
-              ? (geometry[Math.floor(geometry.length / 2)] as LatLngExpression)
-              : US_CENTER
-          }
-          zoom={hasRoute ? 6 : DEFAULT_ZOOM}
+          center={mapCenter}
+          zoom={mapZoom}
           style={{ height: '100%', width: '100%' }}
           scrollWheelZoom
           aria-labelledby={embedded ? undefined : 'map-heading'}
@@ -163,6 +296,21 @@ export default function MapView({ routeData, loading = false, embedded = false }
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {bounds && <FitBounds bounds={bounds} />}
+          {showPlannerPins &&
+            plannerPins.map((pin) => (
+              <DraggablePlannerPin key={pin.id} {...pin} />
+            ))}
+          {showPlannerPins &&
+            plannerPins.map((pin) =>
+              pin.recenter ? (
+                <FlyToPlannerPin
+                  key={`fly-${pin.id}`}
+                  position={[pin.position.lat, pin.position.lng]}
+                  active={pin.recenter}
+                  onComplete={pin.onRecenterComplete}
+                />
+              ) : null,
+            )}
           {hasRoute && (
             <Polyline
               positions={geometry as LatLngExpression[]}
@@ -200,6 +348,12 @@ export default function MapView({ routeData, loading = false, embedded = false }
           ))}
         </MapContainer>
       </Box>
+
+      {embedded && showPlannerPins && (
+        <Box sx={{ px: 2.5, py: 1.5, borderTop: 1, borderColor: 'divider', bgcolor: 'background.elevated' }}>
+          <PlanningLegend />
+        </Box>
+      )}
 
       {embedded && hasRoute && (
         <Box sx={{ px: 2.5, py: 1.5, borderTop: 1, borderColor: 'divider', bgcolor: 'background.elevated' }}>

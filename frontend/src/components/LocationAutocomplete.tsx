@@ -6,12 +6,16 @@ import {
   type TextFieldProps,
 } from '@mui/material'
 import { searchLocations } from '../api/locations'
+import LocationColorIndicator from './LocationColorIndicator'
 import type { LocationSuggestion } from '../types/location'
 
 interface LocationAutocompleteProps {
   label: string
   value: string
   onChange: (value: string) => void
+  onSelect?: (suggestion: LocationSuggestion) => void
+  onBlur?: (value: string) => void
+  indicatorColor?: string
   disabled?: boolean
   placeholder?: string
   required?: boolean
@@ -26,6 +30,9 @@ export default function LocationAutocomplete({
   label,
   value,
   onChange,
+  onSelect,
+  onBlur,
+  indicatorColor,
   disabled = false,
   placeholder,
   required = false,
@@ -114,6 +121,7 @@ export default function LocationAutocomplete({
         }
         if (nextValue) {
           onChange(nextValue.label)
+          onSelect?.(nextValue)
         }
       }}
       renderInput={(params) => (
@@ -126,6 +134,10 @@ export default function LocationAutocomplete({
           placeholder={placeholder}
           size="small"
           fullWidth
+          onBlur={(event) => {
+            textFieldProps?.onBlur?.(event)
+            onBlur?.(value)
+          }}
           slotProps={{
             ...params.slotProps,
             ...textFieldProps?.slotProps,
@@ -137,6 +149,12 @@ export default function LocationAutocomplete({
             input: {
               ...params.slotProps.input,
               ...textFieldProps?.slotProps?.input,
+              startAdornment: (
+                <>
+                  {indicatorColor ? <LocationColorIndicator color={indicatorColor} /> : null}
+                  {params.slotProps.input.startAdornment}
+                </>
+              ),
               endAdornment: (
                 <>
                   {loading ? (

@@ -22,8 +22,17 @@ import PageHeader from "../components/ui/PageHeader";
 import PageToolbar from "../components/ui/PageToolbar";
 import Panel from "../components/ui/Panel";
 import { createTrip } from "../api/trips";
+import { useLocationPinSync } from "../hooks/useLocationPinSync";
+import { PLANNER_STOP_COLORS, PLANNER_STOP_LABELS } from "../constants/plannerStops";
 import { saveLastTripId } from "../utils/tripStorage";
+import type { MapCoordinates } from "../types/location";
 import type { TripRequest, TripResponse } from "../types/trip";
+
+const DEFAULT_PINS: Record<"current" | "pickup" | "dropoff", MapCoordinates> = {
+  current: { lat: 41.8781, lng: -87.6298 },
+  pickup: { lat: 32.7767, lng: -96.797 },
+  dropoff: { lat: 34.0522, lng: -118.2437 },
+};
 
 const initialForm: TripRequest = {
   current_location: "",
@@ -47,6 +56,9 @@ function parseCycleHours(value: string): number {
 export default function Planner() {
   const [form, setForm] = useState<TripRequest>(initialForm);
   const [cycleInput, setCycleInput] = useState("0");
+  const currentLocation = useLocationPinSync(DEFAULT_PINS.current);
+  const pickupLocation = useLocationPinSync(DEFAULT_PINS.pickup);
+  const dropoffLocation = useLocationPinSync(DEFAULT_PINS.dropoff);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TripResponse | null>(null);
@@ -90,6 +102,46 @@ export default function Planner() {
   };
 
   const logSheetCount = result?.route_data?.log_sheets?.length ?? 0;
+  const planningPins = result?.route_data
+    ? []
+    : [
+        {
+          id: "current" as const,
+          label: PLANNER_STOP_LABELS.current,
+          position: currentLocation.pin,
+          draggable: !loading,
+          onMove: (lat: number, lng: number) =>
+            currentLocation.handlePinMove(lat, lng, (value) =>
+              setForm((prev) => ({ ...prev, current_location: value })),
+            ),
+          recenter: currentLocation.recenter,
+          onRecenterComplete: currentLocation.clearRecenter,
+        },
+        {
+          id: "pickup" as const,
+          label: PLANNER_STOP_LABELS.pickup,
+          position: pickupLocation.pin,
+          draggable: !loading,
+          onMove: (lat: number, lng: number) =>
+            pickupLocation.handlePinMove(lat, lng, (value) =>
+              setForm((prev) => ({ ...prev, pickup_location: value })),
+            ),
+          recenter: pickupLocation.recenter,
+          onRecenterComplete: pickupLocation.clearRecenter,
+        },
+        {
+          id: "dropoff" as const,
+          label: PLANNER_STOP_LABELS.dropoff,
+          position: dropoffLocation.pin,
+          draggable: !loading,
+          onMove: (lat: number, lng: number) =>
+            dropoffLocation.handlePinMove(lat, lng, (value) =>
+              setForm((prev) => ({ ...prev, dropoff_location: value })),
+            ),
+          recenter: dropoffLocation.recenter,
+          onRecenterComplete: dropoffLocation.clearRecenter,
+        },
+      ];
 
   return (
     <Box sx={{ flex: 1, minHeight: 0, overflow: "auto" }}>
@@ -144,30 +196,55 @@ export default function Planner() {
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <CurrentLocationField
                   value={form.current_location}
-                  onChange={(value) =>
-                    setForm((prev) => ({ ...prev, current_location: value }))
+                  onChange={(value, coords) =>
+                    currentLocation.handleLocationChange(value, coords, (next) =>
+                      setForm((prev) => ({ ...prev, current_location: next })),
+                    )
                   }
+                  onBlur={currentLocation.handleLocationBlur}
                   required
                   disabled={loading}
                 />
                 <LocationAutocomplete
-                  label="Pickup location"
+                  label={PLANNER_STOP_LABELS.pickup}
                   name="pickup_location"
                   value={form.pickup_location}
+                  indicatorColor={PLANNER_STOP_COLORS.pickup}
                   onChange={(value) =>
-                    setForm((prev) => ({ ...prev, pickup_location: value }))
+                    pickupLocation.handleLocationChange(value, undefined, (next) =>
+                      setForm((prev) => ({ ...prev, pickup_location: next })),
+                    )
                   }
+                  onSelect={(suggestion) =>
+                    pickupLocation.handleLocationChange(
+                      suggestion.label,
+                      { lat: suggestion.lat, lng: suggestion.lng },
+                      (next) => setForm((prev) => ({ ...prev, pickup_location: next })),
+                    )
+                  }
+                  onBlur={pickupLocation.handleLocationBlur}
                   required
                   placeholder="e.g. Dallas, TX"
                   disabled={loading}
                 />
                 <LocationAutocomplete
-                  label="Dropoff location"
+                  label={PLANNER_STOP_LABELS.dropoff}
                   name="dropoff_location"
                   value={form.dropoff_location}
+                  indicatorColor={PLANNER_STOP_COLORS.dropoff}
                   onChange={(value) =>
-                    setForm((prev) => ({ ...prev, dropoff_location: value }))
+                    dropoffLocation.handleLocationChange(value, undefined, (next) =>
+                      setForm((prev) => ({ ...prev, dropoff_location: next })),
+                    )
                   }
+                  onSelect={(suggestion) =>
+                    dropoffLocation.handleLocationChange(
+                      suggestion.label,
+                      { lat: suggestion.lat, lng: suggestion.lng },
+                      (next) => setForm((prev) => ({ ...prev, dropoff_location: next })),
+                    )
+                  }
+                  onBlur={dropoffLocation.handleLocationBlur}
                   required
                   placeholder="e.g. Los Angeles, CA"
                   disabled={loading}
@@ -269,7 +346,7 @@ export default function Planner() {
               description={
                 result?.route_data
                   ? `${result.route_data.summary.total_distance_miles} mi · ${result.route_data.summary.total_trip_hrs} hrs total`
-                  : "Map updates after route generation"
+                  : "Drag pins or enter locations in the form"
               }
               flush
             >
@@ -277,6 +354,8 @@ export default function Planner() {
                 routeData={result?.route_data}
                 loading={loading}
                 embedded
+                planningMode={!result?.route_data}
+                plannerPins={planningPins}
               />
             </Panel>
           </Box>

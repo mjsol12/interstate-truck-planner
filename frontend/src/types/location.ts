@@ -3,3 +3,9 @@ export interface LocationSuggestion {
   lat: number
   lng: number
 }
+
+export interface MapCoordinates {
+  lat: number
+  lng: number
+}
+

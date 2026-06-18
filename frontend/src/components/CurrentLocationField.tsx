@@ -10,14 +10,17 @@ import MyLocationOutlinedIcon from '@mui/icons-material/MyLocationOutlined'
 import axios from 'axios'
 import { reverseGeocode } from '../api/locations'
 import LocationAutocomplete from './LocationAutocomplete'
-import {
-  getCurrentPosition,
+import {  getCurrentPosition,
   getGeolocationErrorMessage,
 } from '../utils/geolocation'
 
+import type { MapCoordinates } from '../types/location'
+import { PLANNER_STOP_COLORS, PLANNER_STOP_LABELS } from '../constants/plannerStops'
+
 interface CurrentLocationFieldProps {
   value: string
-  onChange: (value: string) => void
+  onChange: (value: string, coords?: MapCoordinates) => void
+  onBlur?: (value: string) => void
   disabled?: boolean
   required?: boolean
 }
@@ -25,6 +28,7 @@ interface CurrentLocationFieldProps {
 export default function CurrentLocationField({
   value,
   onChange,
+  onBlur,
   disabled = false,
   required = false,
 }: CurrentLocationFieldProps) {
@@ -39,7 +43,7 @@ export default function CurrentLocationField({
       const position = await getCurrentPosition()
       const { latitude, longitude } = position.coords
       const location = await reverseGeocode(latitude, longitude)
-      onChange(location.label)
+      onChange(location.label, { lat: latitude, lng: longitude })
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data?.detail) {
         setGeoError(String(error.response.data.detail))
@@ -56,13 +60,22 @@ export default function CurrentLocationField({
       <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <LocationAutocomplete
-            label="Current location"
+            label={PLANNER_STOP_LABELS.current}
             name="current_location"
             value={value}
+            indicatorColor={PLANNER_STOP_COLORS.current}
             onChange={(nextValue) => {
               setGeoError(null)
               onChange(nextValue)
             }}
+            onSelect={(suggestion) => {
+              setGeoError(null)
+              onChange(suggestion.label, {
+                lat: suggestion.lat,
+                lng: suggestion.lng,
+              })
+            }}
+            onBlur={() => onBlur?.(value)}
             required={required}
             placeholder="e.g. Chicago, IL"
             disabled={disabled || geoLoading}
@@ -80,7 +93,8 @@ export default function CurrentLocationField({
                 flexShrink: 0,
                 mt: 0.75,
                 border: 1,
-                borderColor: 'divider',
+                borderColor: PLANNER_STOP_COLORS.current,
+                color: PLANNER_STOP_COLORS.current,
                 borderRadius: 1,
               }}
             >
