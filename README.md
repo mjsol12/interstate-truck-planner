@@ -75,6 +75,7 @@ frontend/
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/health/` | Health check |
+| GET | `/api/trips/analytics/` | Fleet analytics dashboard data |
 | GET | `/api/trips/` | List trips |
 | POST | `/api/trips/` | Create trip (stub response) |
 | GET | `/api/trips/<id>/` | Get trip by ID |
@@ -106,12 +107,12 @@ Build an app that takes trip details and outputs:
 
 ## Next Steps (implementation checklist)
 
-- [ ] Geocode location strings to coordinates
-- [ ] Integrate OSRM public API for driving routes
-- [ ] Implement HOS calculator (70/8 rules, rest periods)
-- [ ] Plan fuel stops every 1,000 miles
-- [ ] Render route polyline and stop markers on map
-- [ ] Draw filled ELD daily log sheets (multi-day trips)
+- [x] Geocode location strings to coordinates
+- [x] Integrate OSRM public API for driving routes
+- [x] Implement HOS calculator (70/8 rules, rest periods)
+- [x] Plan fuel stops every 1,000 miles
+- [x] Render route polyline and stop markers on map
+- [x] Draw filled ELD daily log sheets (multi-day trips)
 - [ ] Deploy frontend (Vercel) and backend (Render/Railway/etc.)
 - [ ] Record 3–5 minute Loom walkthrough
 
