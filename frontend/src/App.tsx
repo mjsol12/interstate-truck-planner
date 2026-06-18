@@ -4,6 +4,7 @@ import { SidebarProvider } from './context/SidebarContext'
 import AppLayout from './components/AppLayout'
 import Analytics from './pages/Analytics'
 import Home from './pages/Home'
+import Landing from './pages/Landing'
 import Planner from './pages/Planner'
 import LogSheets from './pages/LogSheets'
 import LogSheetDetail from './pages/LogSheetDetail'
@@ -14,8 +15,9 @@ function App() {
       <SidebarProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Home />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/dashboard" element={<Navigate to="/analytics" replace />} />
               <Route path="/planner" element={<Planner />} />

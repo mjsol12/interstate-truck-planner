@@ -20,7 +20,7 @@ type NavItem = {
 };
 
 const mainNav: NavItem[] = [
-  { label: "Home", path: "/", Icon: HomeOutlinedIcon },
+  { label: "Home", path: "/home", Icon: HomeOutlinedIcon },
   { label: "Analytics", path: "/analytics", Icon: BarChartOutlinedIcon },
   { label: "Planner", path: "/planner", Icon: RouteOutlinedIcon },
   { label: "Log Sheets", path: "/logs", Icon: DescriptionOutlinedIcon },
@@ -101,8 +101,8 @@ export default function AppSidebar() {
   const { isExpanded, isMobileOpen } = useSidebar();
 
   const isActive = (path: string) =>
-    path === "/"
-      ? location.pathname === "/"
+    path === "/home"
+      ? location.pathname === "/home"
       : location.pathname.startsWith(path);
 
   const showLabels = isExpanded || isMobileOpen;
@@ -145,7 +145,7 @@ export default function AppSidebar() {
       >
         <Box
           component={RouterLink}
-          to="/"
+          to="/home"
           sx={{
             display: "flex",
             alignItems: showLabels ? "flex-start" : "center",

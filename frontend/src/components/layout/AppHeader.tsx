@@ -56,7 +56,7 @@ export default function AppHeader() {
         <Typography
           variant="h6"
           component={RouterLink}
-          to="/"
+          to="/home"
           sx={{
             display: { xs: "block", lg: "none" },
             fontWeight: 700,
