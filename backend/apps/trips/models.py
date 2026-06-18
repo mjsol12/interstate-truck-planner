@@ -4,9 +4,11 @@ from django.db import models
 class Trip(models.Model):
     STATUS_PENDING = "pending"
     STATUS_COMPLETED = "completed"
+    STATUS_FAILED = "failed"
     STATUS_CHOICES = [
         (STATUS_PENDING, "Pending"),
         (STATUS_COMPLETED, "Completed"),
+        (STATUS_FAILED, "Failed"),
     ]
 
     current_location = models.CharField(max_length=255)
@@ -18,6 +20,10 @@ class Trip(models.Model):
         choices=STATUS_CHOICES,
         default=STATUS_PENDING,
     )
+    route_data = models.JSONField(null=True, blank=True)
+    total_distance_miles = models.FloatField(null=True, blank=True)
+    total_duration_hrs = models.FloatField(null=True, blank=True)
+    error_message = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
