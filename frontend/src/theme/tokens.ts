@@ -63,10 +63,19 @@ export const tokens = {
   dark: {
     text: "#f9fafb",
     textSecondary: "#98a2b3",
+    textMuted: "#667085",
     border: "#1d2939",
+    borderStrong: "#344054",
     surface: "#101828",
     background: "#0c111d",
+    elevated: "#1d2939",
     header: "#101828",
+    primaryLight: "rgba(70, 95, 255, 0.18)",
+    primarySoft: "rgba(70, 95, 255, 0.28)",
+    hover: "rgba(255, 255, 255, 0.06)",
+    selected: "rgba(70, 95, 255, 0.2)",
+    shadow: "0 1px 2px rgba(0, 0, 0, 0.35)",
+    shadowMd: "0 4px 16px rgba(0, 0, 0, 0.45)",
   },
   typography: {
     fontFamily:

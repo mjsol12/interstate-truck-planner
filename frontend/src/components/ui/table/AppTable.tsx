@@ -173,12 +173,11 @@ const headCellSx: SxProps<Theme> = {
   textOverflow: "ellipsis",
   borderBottom: 1,
   borderColor: "divider",
-  bgcolor: "background.default",
+  bgcolor: "background.elevated",
   boxSizing: "border-box",
 };
 
-/** Solid hover fill — avoids see-through sticky columns over scrolled cells. */
-const bodyRowHoverBg = "background.default";
+const bodyRowHoverBg = "background.elevated";
 
 const bodyCellSx: SxProps<Theme> = {
   px: 1.5,
@@ -193,16 +192,16 @@ const bodyCellSx: SxProps<Theme> = {
   maxWidth: 0,
   bgcolor: "background.paper",
   ".MuiTableRow-root:hover &": { bgcolor: bodyRowHoverBg },
-  ".MuiTableRow-root.Mui-selected &": { bgcolor: "primary.light" },
-  ".MuiTableRow-root.Mui-selected:hover &": { bgcolor: "primary.light" },
+  ".MuiTableRow-root.Mui-selected &": { bgcolor: "action.selected" },
+  ".MuiTableRow-root.Mui-selected:hover &": { bgcolor: "action.selected" },
 };
 
 const stickyBodyCellStateSx: SxProps<Theme> = {
   bgcolor: "background.paper",
   backgroundClip: "padding-box",
   ".MuiTableRow-root:hover &": { bgcolor: bodyRowHoverBg },
-  ".MuiTableRow-root.Mui-selected &": { bgcolor: "primary.light" },
-  ".MuiTableRow-root.Mui-selected:hover &": { bgcolor: "primary.light" },
+  ".MuiTableRow-root.Mui-selected &": { bgcolor: "action.selected" },
+  ".MuiTableRow-root.Mui-selected:hover &": { bgcolor: "action.selected" },
 };
 
 function stickyLeftCellSx(isHead: boolean, left: number): SxProps<Theme> {
@@ -214,7 +213,7 @@ function stickyLeftCellSx(isHead: boolean, left: number): SxProps<Theme> {
     ...(isHead && { top: 0 }),
     zIndex,
     ...(isHead
-      ? { bgcolor: "background.default", backgroundClip: "padding-box" }
+      ? { bgcolor: "background.elevated", backgroundClip: "padding-box" }
       : stickyBodyCellStateSx),
     boxShadow: (theme) => {
       const edge = `1px 0 0 0 ${theme.palette.divider}`;
@@ -255,7 +254,7 @@ export function AppTableHead({
                 position: "sticky",
                 top: 0,
                 zIndex: 10,
-                bgcolor: "background.default",
+                bgcolor: "background.elevated",
                 boxShadow: (theme) => `0 1px 0 0 ${theme.palette.divider}`,
               },
               "& .MuiTableCell-head[data-sticky-left]": {

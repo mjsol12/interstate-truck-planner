@@ -35,7 +35,7 @@ export default function InsightTile({
         p: 2,
         height: "100%",
         borderRadius: 1,
-        bgcolor: "background.default",
+        bgcolor: "background.elevated",
         border: 1,
         borderColor: "divider",
       }}

@@ -43,7 +43,7 @@ function MessageQuoteCard({
       sx={{
         width: { xs: 280, sm: 340 },
         p: 1.5,
-        bgcolor: "background.default",
+        bgcolor: "background.elevated",
         borderRadius: `${tokens.radius.md}px`,
       }}
     >

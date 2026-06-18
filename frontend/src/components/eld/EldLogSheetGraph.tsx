@@ -1,17 +1,24 @@
 import { useEffect, useRef } from "react";
-import { Box } from "@mui/material";
+import { Box, useTheme } from "@mui/material";
 import type { LogSheet } from "../../types/trip";
 import { tokens } from "../../theme/tokens";
 
-const ROWS = [
-  { key: "off_duty", label: "Off Duty", color: tokens.colors.textSecondary },
-  { key: "sleeper", label: "Sleeper Berth", color: "#78716c" },
-  { key: "driving", label: "Driving", color: tokens.colors.primary },
-  {
-    key: "on_duty",
-    label: "On Duty (Not Driving)",
-    color: tokens.colors.warning,
-  },
+interface GraphColors {
+  surface: string;
+  text: string;
+  textSecondary: string;
+  textMuted: string;
+  border: string;
+  borderStrong: string;
+  primary: string;
+  warning: string;
+}
+
+const ROW_KEYS = [
+  { key: "off_duty", label: "Off Duty", colorKey: "textSecondary" as const },
+  { key: "sleeper", label: "Sleeper Berth", colorKey: "textMuted" as const },
+  { key: "driving", label: "Driving", colorKey: "primary" as const },
+  { key: "on_duty", label: "On Duty (Not Driving)", colorKey: "warning" as const },
 ] as const;
 
 const FULL_GRID = {
@@ -40,6 +47,29 @@ interface EldLogSheetGraphProps {
   graphOnly?: boolean;
 }
 
+function resolveGraphColors(isDark: boolean): GraphColors {
+  const d = tokens.dark;
+  const c = tokens.colors;
+
+  return {
+    surface: isDark ? d.surface : c.surface,
+    text: isDark ? d.text : c.text,
+    textSecondary: isDark ? d.textSecondary : c.textSecondary,
+    textMuted: isDark ? d.textMuted : c.textMuted,
+    border: isDark ? d.border : c.border,
+    borderStrong: isDark ? d.borderStrong : c.borderStrong,
+    primary: c.primary,
+    warning: c.warning,
+  };
+}
+
+function rowColor(
+  colors: GraphColors,
+  colorKey: (typeof ROW_KEYS)[number]["colorKey"],
+) {
+  return colors[colorKey];
+}
+
 export default function EldLogSheetGraph({
   sheet,
   maxWidth = 800,
@@ -47,8 +77,12 @@ export default function EldLogSheetGraph({
   graphOnly = false,
 }: EldLogSheetGraphProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const theme = useTheme();
+  const isDark = theme.palette.mode === "dark";
+  const borderColor = isDark ? tokens.dark.border : tokens.colors.border;
 
   useEffect(() => {
+    const colors = resolveGraphColors(isDark);
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -72,13 +106,13 @@ export default function EldLogSheetGraph({
     canvas.style.aspectRatio = `${canvasWidth} / ${canvasHeight}`;
     ctx.scale(dpr, dpr);
 
-    ctx.fillStyle = tokens.colors.surface;
+    ctx.fillStyle = colors.surface;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     if (!graphOnly) {
-      ctx.strokeStyle = tokens.colors.text;
+      ctx.strokeStyle = colors.text;
       ctx.lineWidth = 1;
-      ctx.fillStyle = tokens.colors.text;
+      ctx.fillStyle = colors.text;
       ctx.font = "bold 13px Inter, system-ui, sans-serif";
       ctx.fillText(
         "U.S. DEPARTMENT OF TRANSPORTATION — DRIVER'S DAILY LOG",
@@ -97,15 +131,15 @@ export default function EldLogSheetGraph({
       ctx.fillText("24-Hour Period (Midnight to Midnight)", 20, 108);
     }
 
-    drawGrid(ctx, grid, !graphOnly);
-    drawDutyTimeline(ctx, grid, sheet.segments);
+    drawGrid(ctx, grid, !graphOnly, colors);
+    drawDutyTimeline(ctx, grid, sheet.segments, colors);
 
     if (!graphOnly) {
       ctx.font = "11px Inter, system-ui, sans-serif";
-      ctx.fillStyle = tokens.colors.textSecondary;
+      ctx.fillStyle = colors.textSecondary;
       ctx.fillText(`Remarks: ${truncate(sheet.remarks, 90)}`, 20, 490);
     }
-  }, [sheet, maxWidth, graphOnly]);
+  }, [sheet, maxWidth, graphOnly, isDark]);
 
   return (
     <Box sx={{ display: "flex", justifyContent: "center", overflowX: "auto" }}>
@@ -118,7 +152,7 @@ export default function EldLogSheetGraph({
             : `FMCSA daily log for day ${sheet.day_number}, ${sheet.date_display}. ${sheet.segments.length} duty status segments.`
         }
         style={{
-          border: showBorder ? `1px solid ${tokens.colors.border}` : "none",
+          border: showBorder ? `1px solid ${borderColor}` : "none",
           borderRadius: showBorder ? 8 : 0,
           display: "block",
         }}
@@ -144,8 +178,9 @@ function drawGrid(
   ctx: CanvasRenderingContext2D,
   grid: GridLayout,
   showLabels: boolean,
+  colors: GraphColors,
 ) {
-  ctx.strokeStyle = tokens.colors.borderStrong;
+  ctx.strokeStyle = colors.borderStrong;
   ctx.lineWidth = 1;
 
   for (let h = 0; h <= 24; h++) {
@@ -156,30 +191,30 @@ function drawGrid(
     ctx.stroke();
 
     if (showLabels && h % 2 === 0) {
-      ctx.fillStyle = tokens.colors.textMuted;
+      ctx.fillStyle = colors.textMuted;
       ctx.font = "9px Inter, system-ui, sans-serif";
       const label = h === 0 ? "Mid" : h === 12 ? "Noon" : String(h);
       ctx.fillText(label, x - 8, grid.top - 6);
     }
   }
 
-  ROWS.forEach((row, i) => {
+  ROW_KEYS.forEach((row, i) => {
     const y = grid.top + i * grid.rowHeight;
 
     if (showLabels) {
-      ctx.fillStyle = tokens.colors.text;
+      ctx.fillStyle = colors.text;
       ctx.font = "10px Inter, system-ui, sans-serif";
       ctx.fillText(row.label, 10, y + grid.rowHeight / 2 + 4);
     }
 
-    ctx.strokeStyle = tokens.colors.border;
+    ctx.strokeStyle = colors.border;
     ctx.beginPath();
     ctx.moveTo(grid.left, y);
     ctx.lineTo(grid.left + grid.width, y);
     ctx.stroke();
   });
 
-  ctx.strokeStyle = tokens.colors.text;
+  ctx.strokeStyle = colors.text;
   ctx.lineWidth = 2;
   ctx.strokeRect(grid.left, grid.top, grid.width, grid.height);
 }
@@ -196,16 +231,18 @@ function drawDutyTimeline(
   ctx: CanvasRenderingContext2D,
   grid: GridLayout,
   segments: LogSheet["segments"],
+  colors: GraphColors,
 ) {
   segments.forEach((segment, index) => {
-    const rowIndex = ROWS.findIndex((r) => r.key === segment.status);
+    const rowIndex = ROW_KEYS.findIndex((r) => r.key === segment.status);
     if (rowIndex < 0) return;
 
+    const row = ROW_KEYS[rowIndex];
     const y = rowCenterY(grid, rowIndex);
     const xStart = timeX(grid, segment.start);
     const xEnd = timeX(grid, segment.end);
 
-    ctx.strokeStyle = ROWS[rowIndex].color;
+    ctx.strokeStyle = rowColor(colors, row.colorKey);
     ctx.lineWidth = 3;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
@@ -215,7 +252,7 @@ function drawDutyTimeline(
 
     const next = segments[index + 1];
     if (next) {
-      const nextRow = ROWS.findIndex((r) => r.key === next.status);
+      const nextRow = ROW_KEYS.findIndex((r) => r.key === next.status);
       if (nextRow >= 0 && nextRow !== rowIndex) {
         ctx.lineTo(timeX(grid, segment.end), rowCenterY(grid, nextRow));
       }

@@ -12,7 +12,7 @@ export default function StatCard({ label, value, unit }: StatCardProps) {
       sx={{
         p: 2,
         borderRadius: 1,
-        bgcolor: "background.default",
+        bgcolor: "background.elevated",
         border: 1,
         borderColor: "divider",
       }}

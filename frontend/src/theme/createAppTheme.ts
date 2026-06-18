@@ -12,7 +12,7 @@ export function createAppTheme(mode: ColorMode): Theme {
       primary: {
         main: c.brand[500],
         dark: c.brand[600],
-        light: c.primaryLight,
+        light: isDark ? d.primaryLight : c.primaryLight,
         contrastText: "#ffffff",
       },
       text: {
@@ -22,8 +22,17 @@ export function createAppTheme(mode: ColorMode): Theme {
       background: {
         default: isDark ? d.background : c.background,
         paper: isDark ? d.surface : c.surface,
+        elevated: isDark ? d.elevated : c.backgroundSubtle,
       },
       divider: isDark ? d.border : c.border,
+      action: {
+        hover: isDark ? d.hover : "rgba(16, 24, 40, 0.04)",
+        selected: isDark ? d.selected : "rgba(70, 95, 255, 0.08)",
+        disabled: isDark ? "rgba(255, 255, 255, 0.3)" : "rgba(16, 24, 40, 0.38)",
+        disabledBackground: isDark
+          ? "rgba(255, 255, 255, 0.12)"
+          : "rgba(16, 24, 40, 0.12)",
+      },
       success: { main: c.success },
       warning: { main: c.warning },
       error: { main: c.error },
@@ -63,11 +72,11 @@ export function createAppTheme(mode: ColorMode): Theme {
         styleOverrides: {
           body: {
             scrollbarColor: isDark
-              ? "#344054 transparent"
+              ? "#475467 transparent"
               : "#d0d5dd transparent",
           },
           ":focus-visible": {
-            outline: `2px solid ${c.focusRing}`,
+            outline: `2px solid ${isDark ? tokens.colors.sidebarNav.focusRing : c.focusRing}`,
             outlineOffset: 2,
           },
           "@media (prefers-reduced-motion: reduce)": {
@@ -87,12 +96,19 @@ export function createAppTheme(mode: ColorMode): Theme {
             borderRadius: tokens.radius.sm,
             minHeight: 40,
           },
+          outlined: {
+            borderColor: isDark ? d.borderStrong : c.border,
+            "&:hover": {
+              borderColor: isDark ? d.textMuted : c.borderStrong,
+              backgroundColor: isDark ? d.hover : "rgba(16, 24, 40, 0.04)",
+            },
+          },
         },
       },
       MuiCard: {
         styleOverrides: {
           root: {
-            boxShadow: tokens.shadow.sm,
+            boxShadow: isDark ? d.shadow : tokens.shadow.sm,
             border: `1px solid ${isDark ? d.border : c.border}`,
             borderRadius: tokens.radius.md,
             backgroundImage: "none",
@@ -102,6 +118,13 @@ export function createAppTheme(mode: ColorMode): Theme {
       MuiPaper: {
         styleOverrides: {
           root: { backgroundImage: "none" },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          outlined: {
+            borderColor: isDark ? d.borderStrong : c.border,
+          },
         },
       },
       MuiOutlinedInput: {
@@ -116,6 +139,9 @@ export function createAppTheme(mode: ColorMode): Theme {
           tooltip: {
             fontSize: "0.75rem",
             borderRadius: tokens.radius.sm,
+            backgroundColor: isDark ? d.elevated : c.gray[900],
+            color: d.text,
+            border: isDark ? `1px solid ${d.borderStrong}` : "none",
           },
         },
       },

@@ -130,7 +130,7 @@ export default function MapView({ routeData, loading = false, embedded = false }
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: 'background.default',
+              bgcolor: 'background.elevated',
               color: 'text.secondary',
               gap: 1,
               p: 3,
@@ -202,7 +202,7 @@ export default function MapView({ routeData, loading = false, embedded = false }
       </Box>
 
       {embedded && hasRoute && (
-        <Box sx={{ px: 2.5, py: 1.5, borderTop: 1, borderColor: 'divider', bgcolor: 'background.default' }}>
+        <Box sx={{ px: 2.5, py: 1.5, borderTop: 1, borderColor: 'divider', bgcolor: 'background.elevated' }}>
           <MapLegend />
         </Box>
       )}
