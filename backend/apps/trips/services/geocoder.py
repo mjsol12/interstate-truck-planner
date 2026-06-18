@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import requests
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+NOMINATIM_REVERSE_URL = "https://nominatim.openstreetmap.org/reverse"
 USER_AGENT = "ELDTripPlanner/1.0"
 _last_request_at = 0.0
 
@@ -64,6 +65,25 @@ def search_locations(query: str, limit: int = 5) -> list[LocationSuggestion]:
         )
         for result in results
     ]
+
+
+def reverse_geocode(lat: float, lng: float) -> LocationSuggestion:
+    _rate_limit()
+    response = requests.get(
+        NOMINATIM_REVERSE_URL,
+        params={"lat": lat, "lon": lng, "format": "json", "countrycodes": "us"},
+        headers={"User-Agent": USER_AGENT},
+        timeout=15,
+    )
+    response.raise_for_status()
+    result = response.json()
+    if not result or result.get("error"):
+        raise GeocodingError("Could not resolve coordinates to an address.")
+    return LocationSuggestion(
+        label=result.get("display_name", f"{lat}, {lng}"),
+        lat=float(result.get("lat", lat)),
+        lng=float(result.get("lon", lng)),
+    )
 
 
 def geocode_address(address: str) -> GeocodedLocation:

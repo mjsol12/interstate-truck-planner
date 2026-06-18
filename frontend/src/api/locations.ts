@@ -10,3 +10,14 @@ export async function searchLocations(
   })
   return response.data
 }
+
+export async function reverseGeocode(
+  lat: number,
+  lng: number,
+): Promise<LocationSuggestion> {
+  const response = await client.get<LocationSuggestion>('/locations/reverse/', {
+    params: { lat, lng },
+  })
+  return response.data
+}
+

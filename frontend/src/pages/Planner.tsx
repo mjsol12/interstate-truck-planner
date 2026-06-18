@@ -14,6 +14,7 @@ import { Link as RouterLink } from "react-router-dom";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import LocalGasStationOutlinedIcon from "@mui/icons-material/LocalGasStationOutlined";
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
+import CurrentLocationField from "../components/CurrentLocationField";
 import LocationAutocomplete from "../components/LocationAutocomplete";
 import MapView from "../components/MapView";
 import RouteSummary from "../components/RouteSummary";
@@ -141,15 +142,12 @@ export default function Planner() {
               noValidate
             >
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <LocationAutocomplete
-                  label="Current location"
-                  name="current_location"
+                <CurrentLocationField
                   value={form.current_location}
                   onChange={(value) =>
                     setForm((prev) => ({ ...prev, current_location: value }))
                   }
                   required
-                  placeholder="e.g. Chicago, IL"
                   disabled={loading}
                 />
                 <LocationAutocomplete
