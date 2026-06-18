@@ -12,9 +12,10 @@ export interface ClientPaginationOptions {
  */
 export function useClientPagination<T>(
   items: readonly T[],
-  { pageSize = 10, initialPage = 1 }: ClientPaginationOptions = {},
+  { pageSize: initialPageSize = 100, initialPage = 1 }: ClientPaginationOptions = {},
 ) {
   const [page, setPage] = useState(initialPage)
+  const [pageSize, setPageSizeState] = useState(initialPageSize)
 
   const totalItems = items.length
   const totalPages = getTotalPages(totalItems, pageSize)
@@ -36,6 +37,11 @@ export function useClientPagination<T>(
 
   const resetPage = useCallback(() => setPage(1), [])
 
+  const setPageSize = useCallback((next: number) => {
+    setPageSizeState(next)
+    setPage(1)
+  }, [])
+
   const goToPage = useCallback(
     (next: number) => {
       setPage(Math.min(Math.max(1, next), Math.max(totalPages, 1)))
@@ -53,6 +59,7 @@ export function useClientPagination<T>(
     totalPages,
     pageItems,
     setPage: goToPage,
+    setPageSize,
     resetPage,
     nextPage,
     prevPage,
