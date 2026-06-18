@@ -43,11 +43,19 @@ export function filterLogSheetRows(
       String(row.tripId),
       row.pickupLocation,
       row.dropoffLocation,
+      String(row.sheet.day_number),
+      row.sheet.date,
       row.sheet.date_display,
       row.sheet.from_location,
       row.sheet.to_location,
+      String(row.sheet.total_miles),
       row.sheet.remarks,
-      `day ${row.sheet.day_number}`,
+      ...row.sheet.segments.flatMap((segment) => [
+        segment.status,
+        segment.label,
+        String(segment.start),
+        String(segment.end),
+      ]),
     ]
       .join(' ')
       .toLowerCase()
