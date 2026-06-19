@@ -2,6 +2,10 @@
 
 Full-stack assessment app for planning truck trips with route instructions, rest stops, and FMCSA-compliant ELD daily log sheets.
 
+## Live
+
+You can preview the live version at https://interstate-truck-planner.vercel.app/
+
 ## Stack
 
 - **Backend:** Django 5 + Django REST Framework (SQLite)
@@ -72,13 +76,13 @@ frontend/
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health/` | Health check |
-| GET | `/api/trips/analytics/` | Fleet analytics dashboard data |
-| GET | `/api/trips/` | List trips |
-| POST | `/api/trips/` | Create trip (stub response) |
-| GET | `/api/trips/<id>/` | Get trip by ID |
+| Method | Endpoint                | Description                    |
+| ------ | ----------------------- | ------------------------------ |
+| GET    | `/api/health/`          | Health check                   |
+| GET    | `/api/trips/analytics/` | Fleet analytics dashboard data |
+| GET    | `/api/trips/`           | List trips                     |
+| POST   | `/api/trips/`           | Create trip (stub response)    |
+| GET    | `/api/trips/<id>/`      | Get trip by ID                 |
 
 ### POST /api/trips/ example
 
