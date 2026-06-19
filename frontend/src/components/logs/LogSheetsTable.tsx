@@ -54,6 +54,78 @@ interface LogSheetsTableProps {
   emptyMessage?: string;
 }
 
+interface LogSheetTableRowProps {
+  row: LogSheetListRow;
+  onOpen: (row: LogSheetListRow) => void;
+}
+
+const LogSheetTableRow = memo(function LogSheetTableRow({
+  row,
+  onOpen,
+}: LogSheetTableRowProps) {
+  const { sheet } = row;
+  const activities = segmentActivitySummary(sheet.segments);
+
+  return (
+    <AppTableRow onClick={() => onOpen(row)}>
+      <AppTableCell minWidth={COLUMN_WIDTHS[0]} stickyLeftOffset={0}>
+        #{row.tripId}
+      </AppTableCell>
+      <AppTableCell
+        minWidth={COLUMN_WIDTHS[1]}
+        stickyLeftOffset={STICKY_LEFT_ELD}
+      >
+        <EldLogHoverPreview sheet={sheet} />
+      </AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[2]} title={row.pickupLocation}>
+        {row.pickupLocation}
+      </AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[3]} title={row.dropoffLocation}>
+        {row.dropoffLocation}
+      </AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[4]}>{sheet.day_number}</AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[5]}>{sheet.date_display}</AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[6]} nowrap>
+        {sheet.date}
+      </AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[7]} title={sheet.from_location}>
+        {sheet.from_location}
+      </AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[8]} title={sheet.to_location}>
+        {sheet.to_location}
+      </AppTableCell>
+      <AppTableCell align="right" minWidth={COLUMN_WIDTHS[9]}>
+        {sheet.total_miles}
+      </AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[10]}>
+        <TableTooltipCellContent text={sheet.remarks} label="Remarks" />
+      </AppTableCell>
+      <AppTableCell align="right" minWidth={COLUMN_WIDTHS[11]}>
+        {sheet.segments.length}
+      </AppTableCell>
+      <AppTableCell align="right" minWidth={COLUMN_WIDTHS[12]}>
+        {formatDutyHours(sumSegmentHours(sheet.segments, "off_duty"))}
+      </AppTableCell>
+      <AppTableCell align="right" minWidth={COLUMN_WIDTHS[13]}>
+        {formatDutyHours(sumSegmentHours(sheet.segments, "sleeper"))}
+      </AppTableCell>
+      <AppTableCell align="right" minWidth={COLUMN_WIDTHS[14]}>
+        {formatDutyHours(sumSegmentHours(sheet.segments, "driving"))}
+      </AppTableCell>
+      <AppTableCell align="right" minWidth={COLUMN_WIDTHS[15]}>
+        {formatDutyHours(sumSegmentHours(sheet.segments, "on_duty"))}
+      </AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[16]}>
+        <TableTooltipCellContent
+          text={activities === "—" ? "" : activities}
+          label="Activities"
+          listStyle
+        />
+      </AppTableCell>
+    </AppTableRow>
+  );
+});
+
 function LogSheetsTable({
   rows,
   loading = false,
@@ -131,101 +203,9 @@ function LogSheetsTable({
           ) : rows.length === 0 ? (
             <AppTableEmptyRow colSpan={COLUMN_COUNT} message={emptyMessage} />
           ) : (
-            rows.map((row) => {
-              const { sheet } = row;
-              const activities = segmentActivitySummary(sheet.segments);
-              return (
-                <AppTableRow
-                  key={`${row.tripId}-${sheet.day_number}`}
-                  onClick={() => openDetail(row)}
-                >
-                  <AppTableCell
-                    minWidth={COLUMN_WIDTHS[0]}
-                    stickyLeftOffset={0}
-                  >
-                    #{row.tripId}
-                  </AppTableCell>
-                  <AppTableCell
-                    minWidth={COLUMN_WIDTHS[1]}
-                    stickyLeftOffset={STICKY_LEFT_ELD}
-                  >
-                    <EldLogHoverPreview sheet={sheet} />
-                  </AppTableCell>
-                  <AppTableCell
-                    minWidth={COLUMN_WIDTHS[2]}
-                    title={row.pickupLocation}
-                  >
-                    {row.pickupLocation}
-                  </AppTableCell>
-                  <AppTableCell
-                    minWidth={COLUMN_WIDTHS[3]}
-                    title={row.dropoffLocation}
-                  >
-                    {row.dropoffLocation}
-                  </AppTableCell>
-                  <AppTableCell minWidth={COLUMN_WIDTHS[4]}>
-                    {sheet.day_number}
-                  </AppTableCell>
-                  <AppTableCell minWidth={COLUMN_WIDTHS[5]}>
-                    {sheet.date_display}
-                  </AppTableCell>
-                  <AppTableCell minWidth={COLUMN_WIDTHS[6]} nowrap>
-                    {sheet.date}
-                  </AppTableCell>
-                  <AppTableCell
-                    minWidth={COLUMN_WIDTHS[7]}
-                    title={sheet.from_location}
-                  >
-                    {sheet.from_location}
-                  </AppTableCell>
-                  <AppTableCell
-                    minWidth={COLUMN_WIDTHS[8]}
-                    title={sheet.to_location}
-                  >
-                    {sheet.to_location}
-                  </AppTableCell>
-                  <AppTableCell align="right" minWidth={COLUMN_WIDTHS[9]}>
-                    {sheet.total_miles}
-                  </AppTableCell>
-                  <AppTableCell minWidth={COLUMN_WIDTHS[10]}>
-                    <TableTooltipCellContent
-                      text={sheet.remarks}
-                      label="Remarks"
-                    />
-                  </AppTableCell>
-                  <AppTableCell align="right" minWidth={COLUMN_WIDTHS[11]}>
-                    {sheet.segments.length}
-                  </AppTableCell>
-                  <AppTableCell align="right" minWidth={COLUMN_WIDTHS[12]}>
-                    {formatDutyHours(
-                      sumSegmentHours(sheet.segments, "off_duty"),
-                    )}
-                  </AppTableCell>
-                  <AppTableCell align="right" minWidth={COLUMN_WIDTHS[13]}>
-                    {formatDutyHours(
-                      sumSegmentHours(sheet.segments, "sleeper"),
-                    )}
-                  </AppTableCell>
-                  <AppTableCell align="right" minWidth={COLUMN_WIDTHS[14]}>
-                    {formatDutyHours(
-                      sumSegmentHours(sheet.segments, "driving"),
-                    )}
-                  </AppTableCell>
-                  <AppTableCell align="right" minWidth={COLUMN_WIDTHS[15]}>
-                    {formatDutyHours(
-                      sumSegmentHours(sheet.segments, "on_duty"),
-                    )}
-                  </AppTableCell>
-                  <AppTableCell minWidth={COLUMN_WIDTHS[16]}>
-                    <TableTooltipCellContent
-                      text={activities === "—" ? "" : activities}
-                      label="Activities"
-                      listStyle
-                    />
-                  </AppTableCell>
-                </AppTableRow>
-              );
-            })
+            rows.map((row) => (
+              <LogSheetTableRow key={`${row.tripId}-${row.sheet.day_number}`} row={row} onOpen={openDetail} />
+            ))
           )}
         </AppTableBody>
       </SplitScrollTable>

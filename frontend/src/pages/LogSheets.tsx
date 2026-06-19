@@ -1,12 +1,4 @@
-import {
-  Alert,
-  Box,
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
+import { Alert, Box, Button } from "@mui/material";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useEffect, useMemo, useState } from "react";
@@ -16,20 +8,13 @@ import EmptyState from "../components/ui/EmptyState";
 import SearchInput from "../components/ui/SearchInput";
 import TablePagination from "../components/ui/table/TablePagination";
 import { useClientPagination } from "../hooks/useClientPagination";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { listTrips } from "../api/trips";
 import type { TripResponse } from "../types/trip";
-import {
-  filterLogSheetRows,
-  flattenLogSheets,
-  type LogSheetListFilters,
-} from "../types/logSheetList";
+import { filterLogSheetRows, flattenLogSheets } from "../types/logSheetList";
 
 const PAGE_SIZE = 100;
-
-const defaultFilters: LogSheetListFilters = {
-  search: "",
-  tripId: "all",
-};
+const SEARCH_DEBOUNCE_MS = 200;
 
 /**
  * Log Sheets list page — locked to the viewport (no page scroll).
@@ -37,7 +22,8 @@ const defaultFilters: LogSheetListFilters = {
  */
 export default function LogSheets() {
   const [tripsWithLogs, setTripsWithLogs] = useState<TripResponse[]>([]);
-  const [filters, setFilters] = useState<LogSheetListFilters>(defaultFilters);
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,19 +54,16 @@ export default function LogSheets() {
     [tripsWithLogs],
   );
   const filteredRows = useMemo(
-    () => filterLogSheetRows(allRows, filters),
-    [allRows, filters],
+    () => filterLogSheetRows(allRows, debouncedSearch),
+    [allRows, debouncedSearch],
   );
 
   const pagination = useClientPagination(filteredRows, { pageSize: PAGE_SIZE });
 
   useEffect(() => {
     pagination.resetPage();
-  }, [filters.search, filters.tripId, pagination.resetPage]);
+  }, [debouncedSearch, pagination.resetPage]);
 
-  const hasActiveFilters =
-    filters.search.trim() !== "" || filters.tripId !== "all";
-  const clearFilters = () => setFilters(defaultFilters);
   const showDataPanel = !error && (loading || allRows.length > 0);
 
   return (
@@ -173,9 +156,9 @@ export default function LogSheets() {
               display: "flex",
               flexWrap: "wrap",
               alignItems: "center",
-              gap: 2,
+              gap: 0.5,
               flexShrink: 0,
-              pb: 2,
+              p: 0.5,
             }}
           >
             <Box
@@ -186,55 +169,18 @@ export default function LogSheets() {
               }}
             >
               <SearchInput
-                value={filters.search}
-                onChange={(search) =>
-                  setFilters((prev) => ({ ...prev, search }))
-                }
+                value={searchInput}
+                onChange={setSearchInput}
                 placeholder="Search trip, route, location, date…"
                 aria-label="Search log sheets"
               />
             </Box>
-            <FormControl
-              size="small"
-              sx={{ minWidth: { xs: "100%", sm: 200 } }}
-            >
-              <InputLabel id="log-trip-filter-label">Trip</InputLabel>
-              <Select
-                labelId="log-trip-filter-label"
-                label="Trip"
-                value={filters.tripId}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setFilters((prev) => ({
-                    ...prev,
-                    tripId: value === "all" ? "all" : Number(value),
-                  }));
-                }}
-              >
-                <MenuItem value="all">All trips</MenuItem>
-                {tripsWithLogs.map((trip) => (
-                  <MenuItem key={trip.id} value={trip.id}>
-                    #{trip.id} — {trip.pickup_location} →{" "}
-                    {trip.dropoff_location}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            {hasActiveFilters && (
-              <Button size="small" onClick={clearFilters}>
-                Clear filters
-              </Button>
-            )}
           </Box>
 
           <LogSheetsTable
             rows={pagination.pageItems}
             loading={loading}
-            emptyMessage={
-              hasActiveFilters
-                ? "No log sheets match your filters."
-                : "No log sheets for this trip."
-            }
+            emptyMessage="No log sheets match your search."
           />
 
           <TablePagination

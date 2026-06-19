@@ -5,11 +5,36 @@ export interface LogSheetListRow {
   pickupLocation: string
   dropoffLocation: string
   sheet: LogSheet
+  /** Lowercased text built once for client-side search. */
+  searchText: string
 }
 
 export interface LogSheetListFilters {
   search: string
-  tripId: number | 'all'
+}
+
+function buildSearchText(row: Omit<LogSheetListRow, 'searchText'>): string {
+  const { sheet } = row
+  return [
+    String(row.tripId),
+    row.pickupLocation,
+    row.dropoffLocation,
+    String(sheet.day_number),
+    sheet.date,
+    sheet.date_display,
+    sheet.from_location,
+    sheet.to_location,
+    String(sheet.total_miles),
+    sheet.remarks,
+    ...sheet.segments.flatMap((segment) => [
+      segment.status,
+      segment.label,
+      String(segment.start),
+      String(segment.end),
+    ]),
+  ]
+    .join(' ')
+    .toLowerCase()
 }
 
 export function flattenLogSheets(trips: TripResponse[]): LogSheetListRow[] {
@@ -17,12 +42,13 @@ export function flattenLogSheets(trips: TripResponse[]): LogSheetListRow[] {
   for (const trip of trips) {
     const sheets = trip.route_data?.log_sheets ?? []
     for (const sheet of sheets) {
-      rows.push({
+      const base = {
         tripId: trip.id,
         pickupLocation: trip.pickup_location,
         dropoffLocation: trip.dropoff_location,
         sheet,
-      })
+      }
+      rows.push({ ...base, searchText: buildSearchText(base) })
     }
   }
   return rows.sort((a, b) => {
@@ -33,32 +59,9 @@ export function flattenLogSheets(trips: TripResponse[]): LogSheetListRow[] {
 
 export function filterLogSheetRows(
   rows: LogSheetListRow[],
-  filters: LogSheetListFilters,
+  search: string,
 ): LogSheetListRow[] {
-  const q = filters.search.trim().toLowerCase()
-  return rows.filter((row) => {
-    if (filters.tripId !== 'all' && row.tripId !== filters.tripId) return false
-    if (!q) return true
-    const haystack = [
-      String(row.tripId),
-      row.pickupLocation,
-      row.dropoffLocation,
-      String(row.sheet.day_number),
-      row.sheet.date,
-      row.sheet.date_display,
-      row.sheet.from_location,
-      row.sheet.to_location,
-      String(row.sheet.total_miles),
-      row.sheet.remarks,
-      ...row.sheet.segments.flatMap((segment) => [
-        segment.status,
-        segment.label,
-        String(segment.start),
-        String(segment.end),
-      ]),
-    ]
-      .join(' ')
-      .toLowerCase()
-    return haystack.includes(q)
-  })
+  const q = search.trim().toLowerCase()
+  if (!q) return rows
+  return rows.filter((row) => row.searchText.includes(q))
 }
