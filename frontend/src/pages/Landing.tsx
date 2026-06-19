@@ -21,6 +21,7 @@ import RouteOutlinedIcon from "@mui/icons-material/RouteOutlined";
 import ThemeToggleButton from "../components/layout/ThemeToggleButton";
 import StatCard from "../components/ui/StatCard";
 import { getTripAnalytics } from "../api/analytics";
+import { formatMiles } from "../utils/formatMiles";
 import type { AnalyticsOverview } from "../types/analytics";
 import { tokens } from "../theme/tokens";
 
@@ -384,7 +385,7 @@ export default function Landing() {
             <Grid size={{ xs: 6, sm: 3 }}>
               <StatCard
                 label="Miles routed"
-                value={String(overview!.total_miles)}
+                value={formatMiles(overview!.total_miles)}
                 unit="mi"
               />
             </Grid>

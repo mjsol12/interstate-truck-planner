@@ -7,6 +7,7 @@ import type { RouteData, RouteStop } from '../types/trip'
 import type { MapCoordinates } from '../types/location'
 import { plannerPinIcons, type PlannerPinType } from './map/plannerPinIcon'
 import { PLANNER_STOP_LABELS } from '../constants/plannerStops'
+import { formatMiles } from '../utils/formatMiles'
 import { tokens } from '../theme/tokens'
 import 'leaflet/dist/leaflet.css'
 
@@ -215,7 +216,7 @@ export default function MapView({
             {loading
               ? 'Calculating route…'
               : hasRoute
-                ? `${routeData?.summary.total_distance_miles} mi · ${routeData?.summary.total_trip_hrs} hrs total`
+                ? `${formatMiles(routeData?.summary.total_distance_miles)} mi · ${routeData?.summary.total_trip_hrs} hrs total`
                 : 'Plan a trip to see the route, stops, and rest breaks.'}
           </Typography>
           {hasRoute && <Box sx={{ mt: 1.5 }}><MapLegend /></Box>}
@@ -336,7 +337,7 @@ export default function MapView({
               <Popup>
                 <strong>{stop.label}</strong>
                 <br />
-                Mile {stop.cumulative_miles}
+                Mile {formatMiles(stop.cumulative_miles)}
                 {stop.duration_hrs > 0 && (
                   <>
                     <br />

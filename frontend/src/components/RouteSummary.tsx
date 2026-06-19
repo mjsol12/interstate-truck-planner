@@ -8,6 +8,7 @@ import {
   Typography,
 } from '@mui/material'
 import StatCard from './ui/StatCard'
+import { formatMiles } from '../utils/formatMiles'
 import type { RouteData } from '../types/trip'
 
 interface RouteSummaryProps {
@@ -42,7 +43,7 @@ export default function RouteSummary({ routeData }: RouteSummaryProps) {
           m: 0,
         }}
       >
-        <StatCard label="Distance" value={String(summary.total_distance_miles)} unit="mi" />
+        <StatCard label="Distance" value={formatMiles(summary.total_distance_miles)} unit="mi" />
         <StatCard label="Trip time" value={String(summary.total_trip_hrs)} unit="hrs" />
         <StatCard label="Driving" value={String(summary.total_driving_hrs)} unit="hrs" />
         <StatCard label="On-duty" value={String(summary.total_on_duty_hrs)} unit="hrs" />
@@ -76,7 +77,7 @@ export default function RouteSummary({ routeData }: RouteSummaryProps) {
           <ListItem key={`${leg.from}-${leg.to}`} disableGutters sx={{ py: 0.75 }}>
             <ListItemText
               primary={`${leg.from} → ${leg.to}`}
-              secondary={`${leg.distance_miles} mi · ${leg.duration_hrs} hrs driving`}
+              secondary={`${formatMiles(leg.distance_miles)} mi · ${leg.duration_hrs} hrs driving`}
               slotProps={{ primary: { variant: 'body2', sx: { fontWeight: 500 } } }}
             />
           </ListItem>
@@ -104,7 +105,7 @@ export default function RouteSummary({ routeData }: RouteSummaryProps) {
           <ListItem key={`${stop.label}-${index}`} disableGutters sx={{ py: 0.5 }}>
             <ListItemText
               primary={stop.label}
-              secondary={`Mile ${stop.cumulative_miles}${stop.duration_hrs ? ` · ${stop.duration_hrs} hr` : ''}`}
+              secondary={`Mile ${formatMiles(stop.cumulative_miles)}${stop.duration_hrs ? ` · ${stop.duration_hrs} hr` : ''}`}
               slotProps={{ primary: { variant: 'body2' } }}
             />
           </ListItem>

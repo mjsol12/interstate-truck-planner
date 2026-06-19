@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Box, useTheme } from "@mui/material";
 import type { LogSheet } from "../../types/trip";
+import { formatMiles } from "../../utils/formatMiles";
 import { tokens } from "../../theme/tokens";
 
 interface GraphColors {
@@ -127,7 +128,7 @@ export default function EldLogSheetGraph({
       );
       ctx.fillText(`From: ${truncate(sheet.from_location, 55)}`, 20, 68);
       ctx.fillText(`To: ${truncate(sheet.to_location, 55)}`, 20, 86);
-      ctx.fillText(`Total Miles: ${sheet.total_miles}`, 520, 50);
+      ctx.fillText(`Total Miles: ${formatMiles(sheet.total_miles)}`, 520, 50);
       ctx.fillText("24-Hour Period (Midnight to Midnight)", 20, 108);
     }
 

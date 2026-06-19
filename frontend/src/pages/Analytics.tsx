@@ -32,6 +32,7 @@ import {
   TableSurface,
 } from "../components/ui/table/AppTable";
 import { getTripAnalytics } from "../api/analytics";
+import { formatMiles } from "../utils/formatMiles";
 import type { TripAnalytics } from "../types/analytics";
 
 const statusColor: Record<string, "success" | "error" | "warning" | "default"> =
@@ -153,7 +154,7 @@ export default function Analytics() {
                 <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                   <MetricCard
                     label="Total miles"
-                    value={String(overview.total_miles)}
+                    value={formatMiles(overview.total_miles)}
                     unit="mi"
                     icon={StraightenOutlinedIcon}
                   />
@@ -161,7 +162,7 @@ export default function Analytics() {
                 <Grid size={{ xs: 6, sm: 4, md: 2 }}>
                   <MetricCard
                     label="Avg distance"
-                    value={String(overview.avg_distance_miles)}
+                    value={formatMiles(overview.avg_distance_miles)}
                     unit="mi"
                     icon={StraightenOutlinedIcon}
                   />
@@ -248,7 +249,7 @@ export default function Analytics() {
                         <InsightTile
                           icon={StraightenOutlinedIcon}
                           label="Longest trip"
-                          value={`${data.distance_leaders[0]?.total_distance_miles ?? 0} mi`}
+                          value={`${formatMiles(data.distance_leaders[0]?.total_distance_miles ?? 0)} mi`}
                           hint={
                             data.distance_leaders[0]
                               ? `${data.distance_leaders[0].pickup_location} → ${data.distance_leaders[0].dropoff_location}`
@@ -307,7 +308,7 @@ export default function Analytics() {
                                 />
                               </AppTableCell>
                               <AppTableCell align="right" nowrap>
-                                {trip.total_distance_miles ?? "—"}
+                                {formatMiles(trip.total_distance_miles)}
                               </AppTableCell>
                               <AppTableCell align="right" nowrap>
                                 {trip.total_duration_hrs ?? "—"}
@@ -375,7 +376,7 @@ export default function Analytics() {
                                 variant="body2"
                                 sx={{ fontWeight: 600 }}
                               >
-                                {trip.total_distance_miles} mi ·{" "}
+                                {formatMiles(trip.total_distance_miles)} mi ·{" "}
                                 {trip.total_duration_hrs} hrs
                               </Typography>
                               <Typography

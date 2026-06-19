@@ -18,6 +18,7 @@ import PageHeader from "../components/ui/PageHeader";
 import StatCard from "../components/ui/StatCard";
 import LoadingState from "../components/ui/LoadingState";
 import { getTripAnalytics } from "../api/analytics";
+import { formatMiles } from "../utils/formatMiles";
 import type { AnalyticsOverview } from "../types/analytics";
 
 type QuickLink = {
@@ -208,7 +209,7 @@ export default function Home() {
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <StatCard
                     label="Total miles"
-                    value={String(overview!.total_miles)}
+                    value={formatMiles(overview!.total_miles)}
                     unit="mi"
                   />
                 </Grid>

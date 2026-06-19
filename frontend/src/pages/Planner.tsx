@@ -24,6 +24,7 @@ import Panel from "../components/ui/Panel";
 import { createTrip } from "../api/trips";
 import { useLocationPinSync } from "../hooks/useLocationPinSync";
 import { PLANNER_STOP_COLORS, PLANNER_STOP_LABELS } from "../constants/plannerStops";
+import { formatMiles } from "../utils/formatMiles";
 import { saveLastTripId } from "../utils/tripStorage";
 import type { MapCoordinates } from "../types/location";
 import type { TripRequest, TripResponse } from "../types/trip";
@@ -345,7 +346,7 @@ export default function Planner() {
               title="Route preview"
               description={
                 result?.route_data
-                  ? `${result.route_data.summary.total_distance_miles} mi · ${result.route_data.summary.total_trip_hrs} hrs total`
+                  ? `${formatMiles(result.route_data.summary.total_distance_miles)} mi · ${result.route_data.summary.total_trip_hrs} hrs total`
                   : "Drag pins or enter locations in the form"
               }
               flush

@@ -7,6 +7,7 @@ import {
   segmentActivitySummary,
   sumSegmentHours,
 } from "../../utils/logSheetMetrics";
+import { formatMiles } from "../../utils/formatMiles";
 import {
   AppTableBody,
   AppTableCell,
@@ -24,7 +25,7 @@ import {
 } from "../ui/table/TableTooltipCell";
 
 const COLUMN_WIDTHS = [
-  72, // Trip
+  56, // Trip
   56, // ELD
   140, // Pickup
   140, // Dropoff
@@ -83,8 +84,12 @@ const LogSheetTableRow = memo(function LogSheetTableRow({
       <AppTableCell minWidth={COLUMN_WIDTHS[3]} title={row.dropoffLocation}>
         {row.dropoffLocation}
       </AppTableCell>
-      <AppTableCell minWidth={COLUMN_WIDTHS[4]}>{sheet.day_number}</AppTableCell>
-      <AppTableCell minWidth={COLUMN_WIDTHS[5]}>{sheet.date_display}</AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[4]}>
+        {sheet.day_number}
+      </AppTableCell>
+      <AppTableCell minWidth={COLUMN_WIDTHS[5]}>
+        {sheet.date_display}
+      </AppTableCell>
       <AppTableCell minWidth={COLUMN_WIDTHS[6]} nowrap>
         {sheet.date}
       </AppTableCell>
@@ -95,7 +100,7 @@ const LogSheetTableRow = memo(function LogSheetTableRow({
         {sheet.to_location}
       </AppTableCell>
       <AppTableCell align="right" minWidth={COLUMN_WIDTHS[9]}>
-        {sheet.total_miles}
+        {formatMiles(sheet.total_miles)}
       </AppTableCell>
       <AppTableCell minWidth={COLUMN_WIDTHS[10]}>
         <TableTooltipCellContent text={sheet.remarks} label="Remarks" />
@@ -204,7 +209,11 @@ function LogSheetsTable({
             <AppTableEmptyRow colSpan={COLUMN_COUNT} message={emptyMessage} />
           ) : (
             rows.map((row) => (
-              <LogSheetTableRow key={`${row.tripId}-${row.sheet.day_number}`} row={row} onOpen={openDetail} />
+              <LogSheetTableRow
+                key={`${row.tripId}-${row.sheet.day_number}`}
+                row={row}
+                onOpen={openDetail}
+              />
             ))
           )}
         </AppTableBody>
